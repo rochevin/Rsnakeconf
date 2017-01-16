@@ -254,18 +254,21 @@ server <- function(input, output, session) {
                                        }
                                        tags$tr(tags$td(input_name),tags$td(input_data),res)
                                    }else if(meta_data[["desc"]] == "file"){
-                                       #check the extension parameters in parent
+                                       #check the extension and directory parameters in parent
                                        ext <- ""
+                                       dir <- ""
                                        for(t in 1:length(conf[[i]])){
                                            sub_meta_data <- conf[[i]][[t]]
                                            sub_input_name <- names(conf[[i]])[t];
                                            if(sub_meta_data[["desc"]] == "extension"){
                                                ext <- input[[sub_input_name]];
+                                           }else if(sub_meta_data[["desc"]] == "directory"){
+                                               dir <- input[[sub_input_name]];
                                            }
                                        }
                                        files.cells <- NULL
                                        for(f in unlist(strsplit(input_data,"\n"))){
-                                           if(file.exists(f)){
+                                           if(file.exists(paste0(dir,"/",f,ext))){
                                                res <- tags$td(class="success","OK")
                                            }else{
                                                res <- tags$td(class="danger","NO FILE")
@@ -275,7 +278,8 @@ server <- function(input, output, session) {
                                        HTML(files.cells)
                                    }else {
                                        tag.class <- ifelse(input_data %in% c(NA,""),"danger","success")
-                                       tags$tr(tags$td(input_name),tags$td(input_data),tags$td(class=tag.class,input_name))
+                                       tag.value <- ifelse(input_data %in% c(NA,""),"NO VALUE","OK")
+                                       tags$tr(tags$td(input_name),tags$td(input_data),tags$td(class=tag.class,tag.value))
                                        
                                        
                                    }
