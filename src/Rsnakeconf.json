@@ -41,7 +41,7 @@
 		},
 		"aln_type" : {
 			"type" : "selectInput",
-			"desc" : "extension",
+			"desc" : "parameter",
 			"value" : ["TopHat2","STAR2"] 
 		}
 	}
