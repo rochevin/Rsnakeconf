@@ -8,11 +8,11 @@
 #'
 
 #Library
+library(jsonlite)
 library(shiny)
 library(miniUI)
 library(shinythemes)
 library(shinyAce)
-
 #Functions
 
 ##Configuration for app
@@ -24,14 +24,23 @@ jsonConf <- function(confdir = "src/Rsnakeconf.json"){
     return(jsonfile)
 }
 
+
 ##Choice of input Type and values
 inputType <- function(type,label,id,vals = NULL){
     
     res <- switch(type,
-                  "text" = textInput(id, label,
-                                     value = vals[1]),
-                  "numeric" =  numericInput(id, label,
-                                            value = vals[1],min=1),
+                  "text" = div(class="form-group shiny-input-container",
+                               tags$label(class="control-label col-sm-2",label,`for` =id),  
+                               div(class="col-sm-10",
+                                   tags$input(id=id,class="form-control",type=type,value=vals[1])
+                               )
+                  ),
+                  "number" =  div(class="form-group shiny-input-container",
+                                   tags$label(class="control-label col-sm-2",label,`for` =id),  
+                                   div(class="col-sm-10",
+                                       tags$input(id=id,class="form-control",type=type,value=vals[1],`min` =1)
+                                   )
+                  ),
                   "checkbox" = checkboxInput(id, label,
                                              value = TRUE),
                   "checkboxGroup" = checkboxGroupInput(id, label,
@@ -42,17 +51,34 @@ inputType <- function(type,label,id,vals = NULL){
                                                 choices = vals,
                                                 selected = vals[1]
                   ),
-                  "selectInput" = selectInput(id, label,
-                                              choices = vals,
-                                              selected = vals[1]
+                  "selectInput" = div(class="form-group shiny-input-container",
+                                      tags$label(class="control-label col-sm-2",label,`for` =id), 
+                                      div(class="col-sm-10",
+                                          tags$select(id=id,`size` =length(vals),
+                                                      tags$option(selected=T,value=vals[1],vals[1]),
+                                                      lapply(2:length(vals),function(i){tags$option(value=vals[i],vals[i])})
+                                          ),
+                                          tags$script(type="application/json",`data-for` =id,`data-nonempty`="","{}")
+                                      )
                   ),
-                  "selectInput.multi" = selectInput(id, label,
-                                                    choices = vals,
-                                                    selected = vals[1],
-                                                    multiple = TRUE
+                  "selectInput.multi" = div(class="form-group shiny-input-container",
+                                            tags$label(class="control-label col-sm-2",label,`for` =id), 
+                                            div(class="col-sm-10",
+                                                tags$select(multiple="multiple",id=id,`size` =length(vals),
+                                                            tags$option(selected=T,value=vals[1],vals[1]),
+                                                            lapply(2:length(vals),function(i){tags$option(value=vals[i],vals[i])})
+                                                ),
+                                                tags$script(type="application/json",`data-for` =id,"{}")
+                                            )
                   ),
-                  "textArea" = textAreaInput(id, label, value = vals)
+                  "textArea" = div(class="form-group shiny-input-container",
+                                   tags$label(class="control-label col-sm-2",label,`for` =id),  
+                                   div(class="col-sm-10",
+                                       tags$textarea(id=id,class="form-control",vals)
+                                   )
+                  )
     )
+    
     return(res)
 }
 #Load value from file or return default value
@@ -94,7 +120,14 @@ miniTabstripPanel(
     miniTabPanel("Parameters", icon = icon("sliders"),
                  miniContentPanel(
                      #Load from file
-                     wellPanel(fileInput("file", label = "Load from file :")),
+                     column(10,offset=1,
+                        wellPanel(
+                            div(style="display: inline-block;",
+                                tags$label("Load from file :"),
+                                fileInput("file", label = "")
+                            )
+                        )
+                     ),
                      #Dynamical UI Output
                      lapply(1:length(conf), function(i) {
                          uiOutput(names(conf)[i])
@@ -106,9 +139,11 @@ miniTabstripPanel(
                      aceEditor("code",mode="json",theme="terminal",readOnly = TRUE,height="100%")
                  )
     ),
-    miniTabPanel("Summarize", icon = icon("check"),
+    miniTabPanel("Overview", icon = icon("eye"),
                  miniContentPanel(
-                     
+                     lapply(1:length(conf), function(i) {
+                         uiOutput(paste0("overview_",names(conf)[i]))
+                     })
                  )
     )
 ),
@@ -140,59 +175,80 @@ server <- function(input, output, session) {
     #Dynamical UI output
     lapply(1:length(conf), function(i) {
         output[[names(conf)[i]]] <- renderUI({
-            wellPanel(
-                div(style="text-align:center;",h3(names(conf)[i])),
-                lapply(1:length(conf[[i]]),function(j){
-                    type <- names(conf[[i]][[j]])
-                    id <- names(conf[[i]])[j]
-                    label <- paste(names(conf[[i]])[j],":")
-                    default_value <- conf[[i]][[j]][[type]]
-                    value <- getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
-                    inputType(type = type,id = id,label = label,vals = value)
-                })
+            column(10,offset=1,
+                    wellPanel(
+                        div(style="text-align:center;",h3(names(conf)[i])),
+                        lapply(1:length(conf[[i]]),function(j){
+                            #Get values
+                            type <- names(conf[[i]][[j]])
+                            id <- names(conf[[i]])[j]
+                            label <- paste(names(conf[[i]])[j],":")
+                            default_value <- conf[[i]][[j]][[type]]
+                            value <- getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
+                            
+                            #Compute output
+                            div(class="form-horizontal",
+                                    inputType(type = type,id = id,label = label,vals = value)
+                            )
+                        })
+                    )        
             )
         })
     })
-    
     # VISUALIZE
-    #Parse sample names
-    sampleName <- reactive({
-        samples <- input$sample_name
-        if(length(samples) == 0){return("")}
-        samples <- paste(unlist(strsplit(samples,"\n")),collapse="\", \"")
-        return(samples)
-    })
-
     #return conf text
     ConfigOutput <- reactive({
-        #GENOME
-        gen_dir <- paste0("\t\"gen_dir\" : \"",input$gen_dir,"\"")
-        gen_name <- paste0("\t\"gen_name\" : \"",input$gen_name,"\"")
-        gen_ext <- paste0("\t\"gen_ext\" : \"",input$gen_ext,"\"")
-        #SAMPLES
-        sample_dir <- paste0("\t\"sample_dir\" : \"",input$sample_dir,"\"")
-        sample_name <- paste0("\t\"sample_name\" : [\"",sampleName(),"\"]")
-        sample_ext <- paste0("\t\"sample_ext\" : \"",input$sample_ext,"\"")
-        #Alignment
-        aln_threads <- paste0("\t\"aln_threads\" : \"",input$aln_threads,"\"")
-        
-        out <- paste(
-            gen_dir,
-            gen_name,
-            gen_ext,
-            sample_dir,
-            sample_name,
-            sample_ext,
-            aln_threads
-            ,sep = ",\n")
-        
-        
-        
-        return(paste("{\n",out,"\n}"))
+        out <- NULL;
+        for(i in 1:length(conf)){
+            for(j in 1:length(conf[[i]])){
+                input_name <- names(conf[[i]])[j];
+                input_data <- input[[names(conf[[i]])[j]]];
+                
+                sentence <- paste0("\t\"",input_name,"\" : \"",gsub("\n",",",input_data),"\"");
+                if(is.null(out)){
+                    out <- sentence;
+                }else {
+                    out <- paste(out,sentence,sep=",\n");    
+                }
+            }
+        }
+        out <- paste("{\n",out,"\n}");
+        return(out)
     })
     #Update Ace Editor
     observeEvent(input$update, {
         updateAceEditor(session, "code", value=ConfigOutput())
+    })
+    
+    #Overview
+    lapply(1:length(conf), function(i) {
+        output[[paste0("overview_",names(conf)[i])]] <- renderUI({
+            column(4,offset=4,
+                   div(style="text-align:center;",h5(strong(names(conf)[i]))),
+                   tags$table(class="table table-striped table-hover table-bordered",
+                       tags$thead(
+                           tags$tr(
+                               tags$td("Options"),
+                               tags$td("Status")
+                           )
+                       ),
+                       tags$tbody(
+                           lapply(1:length(conf[[i]]),function(j){
+                               #Get values
+                               input_name <- names(conf[[i]])[j];
+                               input_data <- input[[names(conf[[i]])[j]]];
+                               #Compute output
+                               tags$tr(
+                                   tags$td(input_name),
+                                   if(cc == cc){
+                                       
+                                   }
+                               )
+                           })
+                       )
+                   )        
+            )
+        })
     })
     
 }
