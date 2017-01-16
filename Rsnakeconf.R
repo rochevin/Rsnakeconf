@@ -264,15 +264,13 @@ server <- function(input, output, session) {
                                            }
                                        }
                                        files.cells <- NULL
-                                       f.numbers <- 1
                                        for(f in unlist(strsplit(input_data,"\n"))){
                                            if(file.exists(f)){
                                                res <- tags$td(class="success","OK")
                                            }else{
                                                res <- tags$td(class="danger","NO FILE")
                                            }
-                                           files.cells <- paste0(files.cells,"<tr>",tags$td(paste(input_name,":",f.numbers)),tags$td(f),res,"</tr>")
-                                           f.numbers <- f.numbers + 1
+                                           files.cells <- paste0(files.cells,"<tr>",tags$td(input_name),tags$td(f),res,"</tr>")
                                        }
                                        HTML(files.cells)
                                    }else {
