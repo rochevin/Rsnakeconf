@@ -1,0 +1,32 @@
+{
+	"Genome" : {
+		"gen_dir" : {
+			"text" : ""
+		},
+		"gen_name" : {
+			"text" : ""
+		},
+		"gen_ext" : {
+			"selectInput" : [".fasta",".fa"]
+		}
+	},
+	"Sample" : {
+		"sample_dir" : {
+			"text" : ""
+		},
+		"sample_name" : {
+			"textArea" : [""]
+		},
+		"sample_ext" : {
+			"selectInput" : [".fastq",".fq"]
+		}
+	},
+	"Alignment" : {
+		"aln_threads" : {
+			"numeric" : 1
+		},
+		"aln_type" : {
+			"selectInput" : ["TopHat2","STAR2"]
+		}
+	}
+}

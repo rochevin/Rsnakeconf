@@ -1,0 +1,10 @@
+{
+	"gen_dir" : "cc/genome",
+	"gen_name" : "hg19",
+	"gen_ext" : ".fa",
+	"sample_dir" : "cc/sample",
+	"sample_name" : ["cc1","cc2"],
+	"sample_ext" : ".fastq",
+	"aln_threads" : 1,
+	"aln_type" : "STAR"
+}
