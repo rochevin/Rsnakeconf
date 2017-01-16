@@ -1,32 +1,48 @@
 {
 	"Genome" : {
 		"gen_dir" : {
-			"text" : ""
+			"type" : "text",
+			"desc" : "directory",
+			"value" : ""
 		},
 		"gen_name" : {
-			"text" : ""
+			"type" : "text",
+			"desc" : "file",
+			"value" : ""
 		},
 		"gen_ext" : {
-			"selectInput" : [".fasta",".fa"]
+			"type" : "selectInput",
+			"desc" : "extension",
+			"value" : [".fasta",".fa"]
 		}
 	},
 	"Sample" : {
 		"sample_dir" : {
-			"text" : ""
+			"type" : "text",
+			"desc" : "directory",
+			"value" : ""
 		},
 		"sample_name" : {
-			"textArea" : [""]
+			"type" : "textArea",
+			"desc" : "file",
+			"value" : ""
 		},
 		"sample_ext" : {
-			"selectInput" : [".fastq",".fq"]
+			"type" : "selectInput",
+			"desc" : "extension",
+			"value" : [".fastq",".fq"]
 		}
 	},
 	"Alignment" : {
 		"aln_threads" : {
-			"numeric" : 1
+			"type" : "number",
+			"desc" : "parameter",
+			"value" : 1
 		},
 		"aln_type" : {
-			"selectInput" : ["TopHat2","STAR2"]
+			"type" : "selectInput",
+			"desc" : "extension",
+			"value" : ["TopHat2","STAR2"] 
 		}
 	}
 }
