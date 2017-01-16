@@ -263,16 +263,20 @@ server <- function(input, output, session) {
                                                ext <- input[[sub_input_name]];
                                            }
                                        }
+                                       files.cells <- NULL
+                                       f.numbers <- 1
                                        for(f in unlist(strsplit(input_data,"\n"))){
                                            if(file.exists(f)){
                                                res <- tags$td(class="success","OK")
                                            }else{
                                                res <- tags$td(class="danger","NO FILE")
                                            }
-                                           tags$tr(tags$td(input_name),tags$td(f),res)
+                                           files.cells <- paste0(files.cells,"<tr>",tags$td(paste(input_name,":",f.numbers)),tags$td(f),res,"</tr>")
+                                           f.numbers <- f.numbers + 1
                                        }
+                                       HTML(files.cells)
                                    }else {
-                                       tag.class <- ifelse(input_data == "","danger","success")
+                                       tag.class <- ifelse(input_data %in% c(NA,""),"danger","success")
                                        tags$tr(tags$td(input_name),tags$td(input_data),tags$td(class=tag.class,input_name))
                                        
                                        
