@@ -134,16 +134,16 @@ miniTabstripPanel(
                      })
                  )
     ),
-    miniTabPanel("Visualize", icon = icon("file-code-o"),
-                 miniContentPanel(
-                     aceEditor("code",mode="json",theme="terminal",readOnly = TRUE,height="100%")
-                 )
-    ),
     miniTabPanel("Overview", icon = icon("eye"),
                  miniContentPanel(
                      lapply(1:length(conf), function(i) {
                          uiOutput(paste0("overview_",names(conf)[i]))
                      })
+                 )
+    ),
+    miniTabPanel("Visualize", icon = icon("file-code-o"),
+                 miniContentPanel(
+                     aceEditor("code",mode="json",theme="terminal",readOnly = TRUE,height="100%")
                  )
     )
 ),
@@ -180,10 +180,10 @@ server <- function(input, output, session) {
                         div(style="text-align:center;",h3(names(conf)[i])),
                         lapply(1:length(conf[[i]]),function(j){
                             #Get values
-                            type <- names(conf[[i]][[j]])
+                            type <- conf[[i]][[j]][["type"]]
                             id <- names(conf[[i]])[j]
                             label <- paste(names(conf[[i]])[j],":")
-                            default_value <- conf[[i]][[j]][[type]]
+                            default_value <- conf[[i]][[j]][["value"]]
                             value <- getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
                             
                             #Compute output
@@ -202,9 +202,9 @@ server <- function(input, output, session) {
         for(i in 1:length(conf)){
             for(j in 1:length(conf[[i]])){
                 input_name <- names(conf[[i]])[j];
-                input_data <- input[[names(conf[[i]])[j]]];
+                input_data <- input[[input_name]];
                 
-                sentence <- paste0("\t\"",input_name,"\" : \"",gsub("\n",",",input_data),"\"");
+                sentence <- paste0("\t\"",input_name,"\" : [\"",gsub("\n","\",\"",input_data),"\"]");
                 if(is.null(out)){
                     out <- sentence;
                 }else {
@@ -229,6 +229,7 @@ server <- function(input, output, session) {
                        tags$thead(
                            tags$tr(
                                tags$td("Options"),
+                               tags$td("Value"),
                                tags$td("Status")
                            )
                        ),
@@ -236,14 +237,46 @@ server <- function(input, output, session) {
                            lapply(1:length(conf[[i]]),function(j){
                                #Get values
                                input_name <- names(conf[[i]])[j];
-                               input_data <- input[[names(conf[[i]])[j]]];
+                               input_data <- input[[input_name]];
+                               
+                               meta_data <- conf[[i]][[j]]
                                #Compute output
-                               tags$tr(
-                                   tags$td(input_name),
-                                   if(cc == cc){
+                                   if(meta_data[["desc"]] == "directory"){
+                                       
+                                       if(input_data == ""){
+                                           res <- tags$td(class="warning","root")
+                                       }else{
+                                           if(dir.exists(input_data)){
+                                               res <- tags$td(class="success","OK")
+                                           }else{
+                                               res <- tags$td(class="danger","NO DIRECTORY")
+                                           }
+                                       }
+                                       tags$tr(tags$td(input_name),tags$td(input_data),res)
+                                   }else if(meta_data[["desc"]] == "file"){
+                                       #check the extension parameters in parent
+                                       ext <- ""
+                                       for(t in 1:length(conf[[i]])){
+                                           sub_meta_data <- conf[[i]][[t]]
+                                           sub_input_name <- names(conf[[i]])[t];
+                                           if(sub_meta_data[["desc"]] == "extension"){
+                                               ext <- input[[sub_input_name]];
+                                           }
+                                       }
+                                       for(f in unlist(strsplit(input_data,"\n"))){
+                                           if(file.exists(f)){
+                                               res <- tags$td(class="success","OK")
+                                           }else{
+                                               res <- tags$td(class="danger","NO FILE")
+                                           }
+                                           tags$tr(tags$td(input_name),tags$td(f),res)
+                                       }
+                                   }else {
+                                       tag.class <- ifelse(input_data == "","danger","success")
+                                       tags$tr(tags$td(input_name),tags$td(input_data),tags$td(class=tag.class,input_name))
+                                       
                                        
                                    }
-                               )
                            })
                        )
                    )        
