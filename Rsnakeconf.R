@@ -13,136 +13,10 @@ library(shiny)
 library(miniUI)
 library(shinythemes)
 library(shinyAce)
-#Functions
-
-##Configuration for app
-jsonConf <- function(confdir = "src/Rsnakeconf.json"){
-    if (!file.exists(confdir))
-        return(NULL)
-    jsonfile <- fromJSON(confdir, flatten=TRUE)
-    
-    return(jsonfile)
-}
-
-
-##Choice of input Type and values
-inputType <- function(type,label,id,vals = NULL){
-    
-    res <- switch(type,
-                  "text" = div(class="form-group shiny-input-container",
-                               tags$label(class="control-label col-sm-3",label,`for` =id),  
-                               div(class="col-sm-9",
-                                   tags$input(id=id,class="form-control",type=type,value=vals[1])
-                               )
-                  ),
-                  "number" =  div(class="form-group shiny-input-container",
-                                   tags$label(class="control-label col-sm-3",label,`for` =id),  
-                                   div(class="col-sm-9",
-                                       tags$input(id=id,class="form-control",type=type,value=vals[1],`min` =1)
-                                   )
-                  ),
-                  "checkbox" = div(class="form-group shiny-input-container",
-                                   div(class="col-sm-3",
-                                       tags$label(class="pull-right",label,`for` =id)
-                                   ),
-                                   div(class="col-sm-9",
-                                       div(
-                                           tags$label(
-                                               tags$input(type="checkbox", id = id,checked=vals[1])
-                                           )    
-                                       )    
-                                   )    
-                  ),
-                  "checkboxGroup" = div(class="form-group shiny-input-checkboxgroup shiny-input-container shiny-input-container-inline",id=id,
-                                        div(class="col-sm-3",
-                                            tags$label(class="pull-right",label,`for` =id)
-                                        ),
-                                        div(class="col-sm-9 shiny-options-group",
-                                            tags$label(class="checkbox-inline",
-                                                       tags$input(type="checkbox",name=id,value=vals[1],checked="checked"),
-                                                       tags$span(vals[1])
-                                            ),
-                                            lapply(2:length(vals),function(i){
-                                                tags$label(class="checkbox-inline",
-                                                           tags$input(type="checkbox",name=id,value=vals[i]),
-                                                           tags$span(vals[i])
-                                                )
-                                            })
-                                        )
-                  ),
-                  "radioButtons" = div(class="form-group shiny-input-radiogroup shiny-input-container shiny-input-container-inline",id=id,
-                                       div(class="col-sm-3",
-                                           tags$label(class="pull-right",label,`for` =id)
-                                       ),
-                                       div(class="col-sm-9 shiny-options-group",
-                                           tags$label(class="radio-inline",
-                                                      tags$input(type="radio",name=id,value=vals[1],checked="checked"),
-                                                      tags$span(vals[1])
-                                           ),
-                                           lapply(2:length(vals),function(i){
-                                               tags$label(class="radio-inline",
-                                                          tags$input(type="radio",name=id,value=vals[i]),
-                                                          tags$span(vals[i])
-                                               )
-                                           })
-                                       )
-                  ),
-                  "selectInput" = div(class="form-group shiny-input-container",
-                                      tags$label(class="control-label col-sm-3",label,`for` =id), 
-                                      div(class="col-sm-9",
-                                          tags$select(id=id,`size` =length(vals),
-                                                      tags$option(selected=T,value=vals[1],vals[1]),
-                                                      lapply(2:length(vals),function(i){tags$option(value=vals[i],vals[i])})
-                                          ),
-                                          tags$script(type="application/json",`data-for` =id,`data-nonempty`="","{}")
-                                      )
-                  ),
-                  "selectInput.multi" = div(class="form-group shiny-input-container",
-                                            tags$label(class="control-label col-sm-3",label,`for` =id), 
-                                            div(class="col-sm-9",
-                                                tags$select(multiple="multiple",id=id,`size` =length(vals),
-                                                            tags$option(selected=T,value=vals[1],vals[1]),
-                                                            lapply(2:length(vals),function(i){tags$option(value=vals[i],vals[i])})
-                                                ),
-                                                tags$script(type="application/json",`data-for` =id,"{}")
-                                            )
-                  ),
-                  "textArea" = div(class="form-group shiny-input-container",
-                                   tags$label(class="control-label col-sm-3",label,`for` =id),  
-                                   div(class="col-sm-9",
-                                       tags$textarea(id=id,class="form-control",vals)
-                                   )
-                  )
-    )
-    
-    return(res)
-}
-#Load value from file or return default value
-getValueFromFile <- function(jsonfile=NULL,type = type,id,default_value=""){
-    if (is.null(jsonfile))
-        return(default_value);
-    
-    if(is.null(jsonfile[[id]]))
-        return(default_value);
-    
-    if(type == "textArea"){
-        return(paste(jsonfile[[id]],collapse="\n"));
-    }else if(type == "selectInput"){
-        if(jsonfile[[id]] %in% default_value){
-            return(c(jsonfile[[id]],default_value[-which(default_value == jsonfile[[id]])]));
-        }else{
-            return(default_value);
-        }
-    }else{
-        return(jsonfile[[id]]);
-    }
-    
-    
-}
-
-
-#Load conf
-conf <- jsonConf();
+source("src/Rsnakeconf_functions.R")
+#GLOBAL PARAMETERS
+##Load configuration file for app
+conf <- Rsnakeconf.jsonConf();
 
 #ShinyUI
 
@@ -227,17 +101,17 @@ server <- function(input, output, session) {
                     id <- names(conf[[i]])[j]
                     label <- paste(names(conf[[i]])[j],":")
                     default_value <- conf[[i]][[j]][["value"]]
-                    value <- getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
+                    value <- Rsnakeconf.getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
                     
                     #Compute output
                     if(type == "textArea"){
                         div(class="form-horizontal",
-                            inputType(type = "radioButtons",id = paste0("sep_",id),label = "Separator :",vals = c("\\n",",",";")),
-                            inputType(type = type,id = id,label = label,vals = value)
+                            Rsnakeconf.inputType(type = "radioButtons",id = paste0("sep_",id),label = "Separator :",vals = c("\\n",",",";")),
+                            Rsnakeconf.inputType(type = type,id = id,label = label,vals = value)
                         )
                     }else {
                         div(class="form-horizontal",
-                            inputType(type = type,id = id,label = label,vals = value)
+                            Rsnakeconf.inputType(type = type,id = id,label = label,vals = value)
                         )
                     }
                 })
