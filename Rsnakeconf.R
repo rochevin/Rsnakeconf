@@ -7,7 +7,7 @@
 #' A json format type file using shiny form as values.
 #'
 
-#Library
+#Library & functions
 library(jsonlite)
 library(shiny)
 library(miniUI)
@@ -16,8 +16,13 @@ library(shinyAce)
 source("src/Rsnakeconf_functions.R")
 #GLOBAL PARAMETERS
 ##Load configuration file for app
-conf <- Rsnakeconf.jsonConf();
-
+Rsnakeconf.conf.file <- "src/Rsnakeconf.json";
+Rsnakeconf.conf.data <- Rsnakeconf.jsonConf();
+##confs keys
+Rsnakeconf.conf.keys.type <- "type";
+Rsnakeconf.conf.keys.desc <- "desc";
+Rsnakeconf.conf.keys.value <- "value";
+Rsnakeconf.conf.keys.comment <- "comment";
 #ShinyUI
 
 ui <- miniPage(tags$head(    
@@ -45,9 +50,9 @@ miniTabstripPanel(
                          )
                      ),
                      #Dynamical UI Output
-                     lapply(1:length(conf), function(i) {
+                     lapply(1:length(Rsnakeconf.conf.data), function(i) {
                          fluidRow(
-                             column(6,offset=3,uiOutput(names(conf)[i]))
+                             column(6,offset=3,uiOutput(names(Rsnakeconf.conf.data)[i]))
                          )
                      })
                  )
@@ -59,8 +64,8 @@ miniTabstripPanel(
     ),
     miniTabPanel("Overview", icon = icon("eye"),
                  miniContentPanel(
-                     lapply(1:length(conf), function(i) {
-                         column(6,offset=3,uiOutput(paste0("overview_",names(conf)[i])))
+                     lapply(1:length(Rsnakeconf.conf.data), function(i) {
+                         column(6,offset=3,uiOutput(paste0("overview_",names(Rsnakeconf.conf.data)[i])))
                      })
                  )
     )
@@ -91,16 +96,16 @@ server <- function(input, output, session) {
         return(jsonfile)
     })
     #Dynamical UI output
-    lapply(1:length(conf), function(i) {
-        output[[names(conf)[i]]] <- renderUI({
+    lapply(1:length(Rsnakeconf.conf.data), function(i) {
+        output[[names(Rsnakeconf.conf.data)[i]]] <- renderUI({
             wellPanel(
-                div(style="text-align:center;",h3(names(conf)[i])),
-                lapply(1:length(conf[[i]]),function(j){
+                div(style="text-align:center;",h3(names(Rsnakeconf.conf.data)[i])),
+                lapply(1:length(Rsnakeconf.conf.data[[i]]),function(j){
                     #Get values
-                    type <- conf[[i]][[j]][["type"]]
-                    id <- names(conf[[i]])[j]
-                    label <- paste(names(conf[[i]])[j],":")
-                    default_value <- conf[[i]][[j]][["value"]]
+                    type <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys.type]]
+                    id <- names(Rsnakeconf.conf.data[[i]])[j]
+                    label <- paste(names(Rsnakeconf.conf.data[[i]])[j],":")
+                    default_value <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys.value]]
                     value <- Rsnakeconf.getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
                     
                     #Compute output
@@ -122,13 +127,13 @@ server <- function(input, output, session) {
     #return conf text
     ConfigOutput <- reactive({
         out <- NULL;
-        for(i in 1:length(conf)){
-            for(j in 1:length(conf[[i]])){
-                input_name <- names(conf[[i]])[j];
+        for(i in 1:length(Rsnakeconf.conf.data)){
+            for(j in 1:length(Rsnakeconf.conf.data[[i]])){
+                input_name <- names(Rsnakeconf.conf.data[[i]])[j];
                 input_data <- input[[input_name]];
                 
-                meta_data <- conf[[i]][[j]]
-                if(meta_data[["type"]] == "textArea"){
+                meta_data <- Rsnakeconf.conf.data[[i]][[j]]
+                if(meta_data[[Rsnakeconf.conf.keys.type]] == "textArea"){
                     sep <- switch(input[[paste0("sep_",input_name)]],
                         "\\n" = "\n",
                         "," = ",",
@@ -164,22 +169,22 @@ server <- function(input, output, session) {
     overview.df <- eventReactive(input$update,{
         df.total <- list();
         #For each global opt
-        for(i in 1:length(conf)){
+        for(i in 1:length(Rsnakeconf.conf.data)){
             #for each sub parameters
             #create sub data.frame
             df.sub <- data.frame("Option"=NULL,"Value"=NULL,"Status"=NULL,"Color"=NULL);
-            for(j in 1:length(conf[[i]])){
+            for(j in 1:length(Rsnakeconf.conf.data[[i]])){
                 #get the parameter name
-                input_name <- names(conf[[i]])[j];
+                input_name <- names(Rsnakeconf.conf.data[[i]])[j];
                 #get the user input
                 input_data <- input[[input_name]];
                 #get the meta information for given parameter
-                meta_data <- conf[[i]][[j]]
+                meta_data <- Rsnakeconf.conf.data[[i]][[j]]
                 #variable for storing temporary values
                 ij.status <- ij.color <- NULL;
                 #Conditions
                 ##DIRECTORY
-                if(meta_data[["desc"]] == "directory"){
+                if(meta_data[[Rsnakeconf.conf.keys.desc]] == "directory"){
                     
                     if(input_data == ""){
                         ij.status <- "root";
@@ -194,7 +199,7 @@ server <- function(input, output, session) {
                         }
                     }
                     df.sub <- rbind(df.sub,data.frame("Option"=input_name,"Value"=input_data,"Status"=ij.status,"Color"=ij.color))
-                }else if(meta_data[["desc"]] == "file"){ ##FILE(S)
+                }else if(meta_data[[Rsnakeconf.conf.keys.desc]] == "file"){ ##FILE(S)
                     #Test if input_data is empty
                     if(input_data == ""){
                         df.sub <- rbind(df.sub,data.frame("Option"=input_name,"Value"="","Status"="EMPTY","Color"="warning"))
@@ -203,16 +208,16 @@ server <- function(input, output, session) {
                     #check the extension and directory parameters in parent
                     ext <- ""
                     dir <- ""
-                    for(t in 1:length(conf[[i]])){
-                        sub_meta_data <- conf[[i]][[t]]
-                        sub_input_name <- names(conf[[i]])[t];
-                        if(sub_meta_data[["desc"]] == "extension"){
+                    for(t in 1:length(Rsnakeconf.conf.data[[i]])){
+                        sub_meta_data <- Rsnakeconf.conf.data[[i]][[t]]
+                        sub_input_name <- names(Rsnakeconf.conf.data[[i]])[t];
+                        if(sub_meta_data[[Rsnakeconf.conf.keys.desc]] == "extension"){
                             ext <- input[[sub_input_name]];
-                        }else if(sub_meta_data[["desc"]] == "directory"){
+                        }else if(sub_meta_data[[Rsnakeconf.conf.keys.desc]] == "directory"){
                             dir <- input[[sub_input_name]];
                         }
                     }
-                    if(meta_data[["type"]] == "textArea"){
+                    if(meta_data[[Rsnakeconf.conf.keys.type]] == "textArea"){
                         #One line per file
                         sep <- switch(input[[paste0("sep_",input_name)]],
                                       "\\n" = "\n",
@@ -250,18 +255,18 @@ server <- function(input, output, session) {
                     
                 }
             }
-            df.total[[names(conf)[i]]] <- df.sub
+            df.total[[names(Rsnakeconf.conf.data)[i]]] <- df.sub
         }
         return(df.total)
     })
     
     #Overview
-    lapply(1:length(conf), function(i) {
-        output[[paste0("overview_",names(conf)[i])]] <- renderUI({
+    lapply(1:length(Rsnakeconf.conf.data), function(i) {
+        output[[paste0("overview_",names(Rsnakeconf.conf.data)[i])]] <- renderUI({
             if(is.null(overview.df()))
                 return(NULL);
             #Compute
-            sub.df <- overview.df()[[names(conf)[i]]];
+            sub.df <- overview.df()[[names(Rsnakeconf.conf.data)[i]]];
             format.cells <- NULL
             for(j in 1:nrow(sub.df)){
                 format.cells <- paste(format.cells,"<tr>",tags$td(sub.df[j,1]),tags$td(sub.df[j,2]),tags$td(class=sub.df[j,4],sub.df[j,3]),"</tr>")
@@ -271,7 +276,7 @@ server <- function(input, output, session) {
                 
             #Show
             wellPanel(
-                div(style="text-align:center;",h5(strong(names(conf)[i]))),
+                div(style="text-align:center;",h5(strong(names(Rsnakeconf.conf.data)[i]))),
                 tags$table(class="table table-striped table-hover table-bordered table-condensed",
                            tags$thead(
                                tags$tr(
