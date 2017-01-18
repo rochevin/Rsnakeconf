@@ -298,6 +298,9 @@ server <- function(input, output, session) {
             )      
         })
     })
+    
+    #Automatically stop a Shiny app when closing the browser tab
+    session$onSessionEnded(stopApp)
 }
 #Run miniUI App
 runGadget(ui, server,viewer = browserViewer())
