@@ -1,14 +1,30 @@
 {
+    "General" : {
+		"experiment_name" : {
+			"type" : "text",
+			"desc" : "parameter",
+			"value" : "",
+			"comment" : "Experimentation name for output file"
+		},
+		"keep_temp" : {
+			"type" : "checkbox",
+			"desc" : "parameter",
+			"value" : "",
+			"comment" : "Check to keep temporary files"
+		}
+	},
 	"Genome" : {
 		"gen_dir" : {
 			"type" : "text",
 			"desc" : "directory",
-			"value" : ""
+			"value" : "",
+			"comment" : "Genome file directory"
 		},
 		"gen_name" : {
 			"type" : "text",
 			"desc" : "file",
-			"value" : ""
+			"value" : "",
+			"comment" : "Genome file name without extension"
 		},
 		"gen_ext" : {
 			"type" : "selectInput",
@@ -20,12 +36,14 @@
 		"sample_dir" : {
 			"type" : "text",
 			"desc" : "directory",
-			"value" : ""
+			"value" : "",
+			"comment" : "Sample files directory"
 		},
 		"sample_name" : {
 			"type" : "textArea",
 			"desc" : "file",
-			"value" : ""
+			"value" : "",
+			"comment" : "Sample files names without extension"
 		},
 		"sample_ext" : {
 			"type" : "selectInput",
@@ -37,12 +55,14 @@
 		"aln_threads" : {
 			"type" : "number",
 			"desc" : "parameter",
-			"value" : 1
+			"value" : 1,
+			"comment" : "Number of threads used by aligner"
 		},
 		"aln_type" : {
 			"type" : "selectInput",
 			"desc" : "parameter",
-			"value" : ["TopHat2","STAR2"] 
+			"value" : ["TopHat2","STAR2"],
+			"comment" : "The type of aligner to use"
 		}
 	}
 }
