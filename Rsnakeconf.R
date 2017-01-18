@@ -23,18 +23,21 @@ Rsnakeconf.conf.keys.type <- "type";
 Rsnakeconf.conf.keys.desc <- "desc";
 Rsnakeconf.conf.keys.value <- "value";
 Rsnakeconf.conf.keys.comment <- "comment";
-#ShinyUI
 
+#ShinyUI
 ui <- miniPage(tags$head(    
     tags$style("label {font-weight:bold;display: inline;}")
 ),theme = shinytheme("flatly"),
+#TOP BUTTONS
 gadgetTitleBar("Snakemake configuration file",
                right = miniTitleBarButton("done", "Create", primary = TRUE)
 ),
+#PANNELS
 miniTabstripPanel(
+    #PARAMETERS
     miniTabPanel("Parameters", icon = icon("sliders"),
                  miniContentPanel(
-                     #Load from file
+                     #File panel
                      fluidRow(
                          column(6,offset=3,
                                 wellPanel(
@@ -43,7 +46,7 @@ miniTabstripPanel(
                                             tags$label(class="pull-right","Load from file :",`for` ="file")
                                         ),
                                         div(class="col-sm-10 shiny-options-group",
-                                            fileInput("file", label = "",width = "100%")
+                                            fileInput("file", label = "",width = "100%") #Load from file
                                         )
                                     ),tags$hr()
                                 )
@@ -57,11 +60,13 @@ miniTabstripPanel(
                      })
                  )
     ),
+    #VISUALIZE
     miniTabPanel("Visualize", icon = icon("file-code-o"),
                  miniContentPanel(
                      aceEditor("code",mode="json",theme="terminal",readOnly = TRUE,height="100%")
                  )
     ),
+    #OVERVIEW
     miniTabPanel("Overview", icon = icon("eye"),
                  miniContentPanel(
                      lapply(1:length(Rsnakeconf.conf.data), function(i) {
@@ -70,6 +75,7 @@ miniTabstripPanel(
                  )
     )
 ),
+#BUTTON UPDATE
 miniButtonBlock(
     actionButton("update", "Update")
 )
@@ -95,7 +101,7 @@ server <- function(input, output, session) {
         
         return(jsonfile)
     })
-    #Dynamical UI output
+    #Dynamical UI output (PARAMETERS UI)
     lapply(1:length(Rsnakeconf.conf.data), function(i) {
         output[[names(Rsnakeconf.conf.data)[i]]] <- renderUI({
             wellPanel(
@@ -123,7 +129,7 @@ server <- function(input, output, session) {
             )      
         })
     })
-    # VISUALIZE
+    # Generate json format with user values (VISUALIZE and Create button)
     #return conf text
     ConfigOutput <- reactive({
         out <- NULL;
@@ -160,12 +166,12 @@ server <- function(input, output, session) {
         out <- paste("{\n",out,"\n}");
         return(out)
     })
-    #Update Ace Editor
+    #Update Ace Editor with Update button
     observeEvent(input$update, {
         updateAceEditor(session, "code", value=ConfigOutput())
     })
     
-    #Generate df for overview
+    #Update df for overview with Update button
     overview.df <- eventReactive(input$update,{
         df.total <- list();
         #For each global opt
@@ -246,7 +252,7 @@ server <- function(input, output, session) {
                         df.sub <- rbind(df.sub,data.frame("Option"=input_name,"Value"=input_name,"Status"=ij.status,"Color"=ij.color))
                     }
                     
-                    
+                #OTHER TYPE
                 }else {
                     ij.color <- ifelse(input_data %in% c(NA,""),"danger","success")
                     ij.status <- ifelse(input_data %in% c(NA,""),"NO VALUE","OK")
@@ -255,12 +261,12 @@ server <- function(input, output, session) {
                     
                 }
             }
-            df.total[[names(Rsnakeconf.conf.data)[i]]] <- df.sub
+            df.total[[names(Rsnakeconf.conf.data)[i]]] <- df.sub #Add d.f to list
         }
         return(df.total)
     })
     
-    #Overview
+    #Dynamical UI (OVERVIEW)
     lapply(1:length(Rsnakeconf.conf.data), function(i) {
         output[[paste0("overview_",names(Rsnakeconf.conf.data)[i])]] <- renderUI({
             if(is.null(overview.df()))
