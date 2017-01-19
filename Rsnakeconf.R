@@ -19,10 +19,12 @@ source("src/Rsnakeconf_functions.R")
 Rsnakeconf.conf.file <- "src/Rsnakeconf.json";
 Rsnakeconf.conf.data <- Rsnakeconf.jsonConf();
 ##confs keys
-Rsnakeconf.conf.keys.type <- "type";
-Rsnakeconf.conf.keys.desc <- "desc";
-Rsnakeconf.conf.keys.value <- "value";
-Rsnakeconf.conf.keys.comment <- "comment";
+Rsnakeconf.conf.keys <- list(
+    "type" = "type",
+    "desc" = "desc",
+    "value" = "value",
+    "comment" = "comment"
+)
 
 #ShinyUI
 ui <- miniPage(tags$head(    
@@ -108,10 +110,10 @@ server <- function(input, output, session) {
                 div(style="text-align:center;",h3(names(Rsnakeconf.conf.data)[i])),
                 lapply(1:length(Rsnakeconf.conf.data[[i]]),function(j){
                     #Get values
-                    type <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys.type]]
+                    type <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["type"]]]]
                     id <- names(Rsnakeconf.conf.data[[i]])[j]
                     label <- paste(names(Rsnakeconf.conf.data[[i]])[j],":")
-                    default_value <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys.value]]
+                    default_value <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["value"]]]]
                     value <- Rsnakeconf.getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
                     
                     #Compute output
@@ -139,7 +141,7 @@ server <- function(input, output, session) {
                 input_data <- input[[input_name]];
                 
                 meta_data <- Rsnakeconf.conf.data[[i]][[j]]
-                if(meta_data[[Rsnakeconf.conf.keys.type]] == "textArea"){
+                if(meta_data[[Rsnakeconf.conf.keys[["type"]]]] == "textArea"){
                     sep <- switch(input[[paste0("sep_",input_name)]],
                         "\\n" = "\n",
                         "," = ",",
@@ -190,7 +192,7 @@ server <- function(input, output, session) {
                 ij.status <- ij.color <- NULL;
                 #Conditions
                 ##DIRECTORY
-                if(meta_data[[Rsnakeconf.conf.keys.desc]] == "directory"){
+                if(meta_data[[Rsnakeconf.conf.keys[["desc"]]]] == "directory"){
                     
                     if(input_data == ""){
                         ij.status <- "root";
@@ -205,7 +207,7 @@ server <- function(input, output, session) {
                         }
                     }
                     df.sub <- rbind(df.sub,data.frame("Option"=input_name,"Value"=input_data,"Status"=ij.status,"Color"=ij.color))
-                }else if(meta_data[[Rsnakeconf.conf.keys.desc]] == "file"){ ##FILE(S)
+                }else if(meta_data[[Rsnakeconf.conf.keys[["desc"]]]] == "file"){ ##FILE(S)
                     #Test if input_data is empty
                     if(input_data == ""){
                         df.sub <- rbind(df.sub,data.frame("Option"=input_name,"Value"="","Status"="EMPTY","Color"="warning"))
@@ -217,13 +219,13 @@ server <- function(input, output, session) {
                     for(t in 1:length(Rsnakeconf.conf.data[[i]])){
                         sub_meta_data <- Rsnakeconf.conf.data[[i]][[t]]
                         sub_input_name <- names(Rsnakeconf.conf.data[[i]])[t];
-                        if(sub_meta_data[[Rsnakeconf.conf.keys.desc]] == "extension"){
+                        if(sub_meta_data[[Rsnakeconf.conf.keys[["desc"]]]] == "extension"){
                             ext <- input[[sub_input_name]];
-                        }else if(sub_meta_data[[Rsnakeconf.conf.keys.desc]] == "directory"){
+                        }else if(sub_meta_data[[Rsnakeconf.conf.keys[["desc"]]]] == "directory"){
                             dir <- input[[sub_input_name]];
                         }
                     }
-                    if(meta_data[[Rsnakeconf.conf.keys.type]] == "textArea"){
+                    if(meta_data[[Rsnakeconf.conf.keys[["type"]]]] == "textArea"){
                         #One line per file
                         sep <- switch(input[[paste0("sep_",input_name)]],
                                       "\\n" = "\n",
