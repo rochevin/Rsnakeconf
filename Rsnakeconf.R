@@ -20,15 +20,16 @@ Rsnakeconf.conf.file <- "src/Rsnakeconf.json";
 Rsnakeconf.conf.data <- Rsnakeconf.jsonConf();
 ##confs keys
 Rsnakeconf.conf.keys <- list(
-    "type" = "type",
-    "desc" = "desc",
+    "type" = "input_type",
+    "desc" = "output_type",
     "value" = "value",
-    "comment" = "comment"
+    "comment" = "description"
 )
 
 #ShinyUI
 ui <- miniPage(tags$head(    
-    tags$style("label {font-weight:bold;display: inline;}")
+    tags$style("label {font-weight:bold;display: inline;}"),
+    tags$script("$(document).ready(function(){$('[data-toggle=\"tooltip\"]').tooltip();});")
 ),theme = shinytheme("flatly"),
 #TOP BUTTONS
 gadgetTitleBar("Snakemake configuration file",
@@ -112,7 +113,15 @@ server <- function(input, output, session) {
                     #Get values
                     type <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["type"]]]]
                     id <- names(Rsnakeconf.conf.data[[i]])[j]
-                    label <- paste(names(Rsnakeconf.conf.data[[i]])[j],":")
+                    if(Rsnakeconf.conf.keys[["comment"]] %in% names(Rsnakeconf.conf.data[[i]][[j]])){
+                        label <- Rsnakeconf.addtooltip(id=id,
+                                                             label = names(Rsnakeconf.conf.data[[i]])[j],
+                                                             comment = Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["comment"]]]]
+                        )
+                    }else {
+                        label <- paste(names(Rsnakeconf.conf.data[[i]])[j],":")
+                    }
+
                     default_value <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["value"]]]]
                     value <- Rsnakeconf.getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
                     

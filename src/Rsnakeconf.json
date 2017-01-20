@@ -1,68 +1,68 @@
 {
     "General" : {
 		"experiment_name" : {
-			"type" : "text",
-			"desc" : "parameter",
+			"input_type" : "text",
+			"output_type" : "parameter",
 			"value" : "",
-			"comment" : "Experimentation name for output file"
+			"output_typeription" : "Experimentation name for output file"
 		},
 		"keep_temp" : {
-			"type" : "checkbox",
-			"desc" : "parameter",
+			"input_type" : "checkbox",
+			"output_type" : "parameter",
 			"value" : "",
-			"comment" : "Check to keep temporary files"
+			"output_typeription" : "Check to keep temporary files"
 		}
 	},
 	"Genome" : {
 		"gen_dir" : {
-			"type" : "text",
-			"desc" : "directory",
+			"input_type" : "text",
+			"output_type" : "directory",
 			"value" : "",
-			"comment" : "Genome file directory"
+			"output_typeription" : "Genome file directory"
 		},
 		"gen_name" : {
-			"type" : "text",
-			"desc" : "file",
+			"input_type" : "text",
+			"output_type" : "file",
 			"value" : "",
-			"comment" : "Genome file name without extension"
+			"output_typeription" : "Genome file name without extension"
 		},
 		"gen_ext" : {
-			"type" : "selectInput",
-			"desc" : "extension",
+			"input_type" : "selectInput",
+			"output_type" : "extension",
 			"value" : [".fasta",".fa"]
 		}
 	},
 	"Sample" : {
 		"sample_dir" : {
-			"type" : "text",
-			"desc" : "directory",
+			"input_type" : "text",
+			"output_type" : "directory",
 			"value" : "",
-			"comment" : "Sample files directory"
+			"output_typeription" : "Sample files directory"
 		},
 		"sample_name" : {
-			"type" : "textArea",
-			"desc" : "file",
+			"input_type" : "textArea",
+			"output_type" : "file",
 			"value" : "",
-			"comment" : "Sample files names without extension"
+			"output_typeription" : "Sample files names without extension"
 		},
 		"sample_ext" : {
-			"type" : "selectInput",
-			"desc" : "extension",
+			"input_type" : "selectInput",
+			"output_type" : "extension",
 			"value" : [".fastq",".fq"]
 		}
 	},
 	"Alignment" : {
 		"aln_threads" : {
-			"type" : "number",
-			"desc" : "parameter",
+			"input_type" : "number",
+			"output_type" : "parameter",
 			"value" : 1,
-			"comment" : "Number of threads used by aligner"
+			"output_typeription" : "Number of threads used by aligner"
 		},
-		"aln_type" : {
-			"type" : "selectInput",
-			"desc" : "parameter",
+		"aln_input_type" : {
+			"input_type" : "selectInput",
+			"output_type" : "parameter",
 			"value" : ["TopHat2","STAR2"],
-			"comment" : "The type of aligner to use"
+			"output_typeription" : "The input_type of aligner to use"
 		}
 	}
 }

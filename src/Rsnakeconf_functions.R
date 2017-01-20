@@ -167,6 +167,16 @@ Rsnakeconf.textAreaInput <- function(label,id,vals){
     return(textAreaForm)
 }
 
+Rsnakeconf.addtooltip <- function(id,label,comment){
+    label <- paste(label,":")
+    if(is.null(comment)){
+        return(label)
+    }else{
+        return(tags$span(id=paste0(id,"_tooltip"),href="#",`data-toggle`="tooltip", `data-placement`="top", `title`=comment,label,
+            tags$script(paste0("$('#",paste0(id,"_tooltip"),"').tooltip();"))
+        ))
+    }
+}
 #' Internal function used to compute each form values from a specific form
 #' 
 #'
