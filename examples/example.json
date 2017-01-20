@@ -1,9 +1,11 @@
 {
-	"gen_dir" : "cc/genome",
-	"gen_name" : "hg19",
-	"gen_ext" : ".fa",
-	"sample_dir" : "cc/sample",
-	"sample_name" : ["cc1","cc2"],
+    "experiment_name" : "Example",
+    "keep_temp" : "checked",
+	"gen_dir" : "examples/",
+	"gen_name" : "genome",
+	"gen_ext" : ".fasta",
+	"sample_dir" : "examples",
+	"sample_name" : ["file1","file2","file3"],
 	"sample_ext" : ".fastq",
 	"aln_threads" : 1,
 	"aln_type" : "STAR"

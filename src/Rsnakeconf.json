@@ -4,13 +4,13 @@
 			"input_type" : "text",
 			"output_type" : "parameter",
 			"value" : "",
-			"output_typeription" : "Experimentation name for output file"
+			"description" : "Experimentation name for output file"
 		},
 		"keep_temp" : {
 			"input_type" : "checkbox",
 			"output_type" : "parameter",
 			"value" : "",
-			"output_typeription" : "Check to keep temporary files"
+			"description" : "Check to keep temporary files"
 		}
 	},
 	"Genome" : {
@@ -18,13 +18,13 @@
 			"input_type" : "text",
 			"output_type" : "directory",
 			"value" : "",
-			"output_typeription" : "Genome file directory"
+			"description" : "Genome file directory"
 		},
 		"gen_name" : {
 			"input_type" : "text",
 			"output_type" : "file",
 			"value" : "",
-			"output_typeription" : "Genome file name without extension"
+			"description" : "Genome file name without extension"
 		},
 		"gen_ext" : {
 			"input_type" : "selectInput",
@@ -37,13 +37,13 @@
 			"input_type" : "text",
 			"output_type" : "directory",
 			"value" : "",
-			"output_typeription" : "Sample files directory"
+			"description" : "Sample files directory"
 		},
 		"sample_name" : {
 			"input_type" : "textArea",
 			"output_type" : "file",
 			"value" : "",
-			"output_typeription" : "Sample files names without extension"
+			"description" : "Sample files names without extension"
 		},
 		"sample_ext" : {
 			"input_type" : "selectInput",
@@ -56,13 +56,13 @@
 			"input_type" : "number",
 			"output_type" : "parameter",
 			"value" : 1,
-			"output_typeription" : "Number of threads used by aligner"
+			"description" : "Number of threads used by aligner"
 		},
 		"aln_input_type" : {
 			"input_type" : "selectInput",
 			"output_type" : "parameter",
 			"value" : ["TopHat2","STAR2"],
-			"output_typeription" : "The input_type of aligner to use"
+			"description" : "The input_type of aligner to use"
 		}
 	}
 }
