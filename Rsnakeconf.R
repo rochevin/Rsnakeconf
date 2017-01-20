@@ -25,6 +25,8 @@ Rsnakeconf.conf.keys <- list(
     "value" = "value",
     "comment" = "description"
 )
+#Specific background color
+Rsnakeconf.conf.colors <- rep(c("#EE4000", "#4F94CD", "#43CD80"),length(Rsnakeconf.conf.data))[1:length(Rsnakeconf.conf.data)]
 
 #ShinyUI
 ui <- miniPage(tags$head(    
@@ -107,36 +109,38 @@ server <- function(input, output, session) {
     #Dynamical UI output (PARAMETERS UI)
     lapply(1:length(Rsnakeconf.conf.data), function(i) {
         output[[names(Rsnakeconf.conf.data)[i]]] <- renderUI({
-            wellPanel(
+            fluidRow(
                 div(style="text-align:center;",h3(names(Rsnakeconf.conf.data)[i])),
-                lapply(1:length(Rsnakeconf.conf.data[[i]]),function(j){
-                    #Get values
-                    type <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["type"]]]]
-                    id <- names(Rsnakeconf.conf.data[[i]])[j]
-                    if(Rsnakeconf.conf.keys[["comment"]] %in% names(Rsnakeconf.conf.data[[i]][[j]])){
-                        label <- Rsnakeconf.addtooltip(id=id,
-                                                             label = names(Rsnakeconf.conf.data[[i]])[j],
-                                                             comment = Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["comment"]]]]
-                        )
-                    }else {
-                        label <- paste(names(Rsnakeconf.conf.data[[i]])[j],":")
-                    }
-
-                    default_value <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["value"]]]]
-                    value <- Rsnakeconf.getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
-                    
-                    #Compute output
-                    if(type == "textArea"){
-                        div(class="form-horizontal",
-                            Rsnakeconf.inputType(type = "radioButtons",id = paste0("sep_",id),label = "Separator :",vals = c("\\n",",",";")),
-                            Rsnakeconf.inputType(type = type,id = id,label = label,vals = value)
-                        )
-                    }else {
-                        div(class="form-horizontal",
-                            Rsnakeconf.inputType(type = type,id = id,label = label,vals = value)
-                        )
-                    }
-                })
+                wellPanel(style=paste0("background-color: ",Rsnakeconf.conf.colors[i],";color:white;"),
+                          lapply(1:length(Rsnakeconf.conf.data[[i]]),function(j){
+                              #Get values
+                              type <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["type"]]]]
+                              id <- names(Rsnakeconf.conf.data[[i]])[j]
+                              if(Rsnakeconf.conf.keys[["comment"]] %in% names(Rsnakeconf.conf.data[[i]][[j]])){
+                                  label <- Rsnakeconf.addtooltip(id=id,
+                                                                 label = names(Rsnakeconf.conf.data[[i]])[j],
+                                                                 comment = Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["comment"]]]]
+                                  )
+                              }else {
+                                  label <- paste(names(Rsnakeconf.conf.data[[i]])[j],":")
+                              }
+                              
+                              default_value <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["value"]]]]
+                              value <- Rsnakeconf.getValueFromFile(jsonfile=jsonData(),type = type,id=id,default_value = default_value)
+                              
+                              #Compute output
+                              if(type == "textArea"){
+                                  div(class="form-horizontal",
+                                      Rsnakeconf.inputType(type = "radioButtons",id = paste0("sep_",id),label = "Separator :",vals = c("\\n",",",";")),
+                                      Rsnakeconf.inputType(type = type,id = id,label = label,vals = value)
+                                  )
+                              }else {
+                                  div(class="form-horizontal",
+                                      Rsnakeconf.inputType(type = type,id = id,label = label,vals = value)
+                                  )
+                              }
+                          })
+                )
             )      
         })
     })
