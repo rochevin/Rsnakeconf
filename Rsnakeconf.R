@@ -26,7 +26,7 @@ Rsnakeconf.conf.keys <- list(
     "comment" = "description"
 )
 #Specific background color
-Rsnakeconf.conf.colors <- rep(c("#EE4000", "#4F94CD", "#43CD80"),length(Rsnakeconf.conf.data))[1:length(Rsnakeconf.conf.data)]
+#Rsnakeconf.conf.colors <- rep(c("#EE4000", "#4F94CD", "#43CD80"),length(Rsnakeconf.conf.data))[1:length(Rsnakeconf.conf.data)]
 
 #ShinyUI
 ui <- miniPage(tags$head(    
@@ -111,8 +111,9 @@ server <- function(input, output, session) {
         output[[names(Rsnakeconf.conf.data)[i]]] <- renderUI({
             fluidRow(
                 div(style="text-align:center;",h3(names(Rsnakeconf.conf.data)[i])),
-                wellPanel(style=paste0("background-color: ",Rsnakeconf.conf.colors[i],";color:white;"),
-                          lapply(1:length(Rsnakeconf.conf.data[[i]]),function(j){
+                #wellPanel(style=paste0("background-color: ",Rsnakeconf.conf.colors[i],";color:white;"),
+                wellPanel( 
+                         lapply(1:length(Rsnakeconf.conf.data[[i]]),function(j){
                               #Get values
                               type <- Rsnakeconf.conf.data[[i]][[j]][[Rsnakeconf.conf.keys[["type"]]]]
                               id <- names(Rsnakeconf.conf.data[[i]])[j]
