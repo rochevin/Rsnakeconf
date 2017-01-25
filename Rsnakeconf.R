@@ -46,14 +46,19 @@ miniTabstripPanel(
                      fluidRow(
                          column(6,offset=3,
                                 wellPanel(
-                                    div(class="form-group shiny-input-container shiny-input-container-inline",
-                                        div(class="col-sm-2",style="padding-top: 10px;",
-                                            tags$label(class="pull-right","Load from file :",`for` ="file")
-                                        ),
-                                        div(class="col-sm-10 shiny-options-group",
-                                            fileInput("file", label = "",width = "100%") #Load from file
+                                    fluidRow(
+                                        div(class="form-group shiny-input-container shiny-input-container-inline",
+                                            div(class="col-sm-2",style="padding-top: 10px;",
+                                                tags$label(class="pull-right","Load from file :",`for` ="file")
+                                            ),
+                                            div(class="col-sm-10 shiny-options-group",
+                                                fileInput("file", label = "",width = "100%") #Load from file
+                                            )
                                         )
-                                    ),tags$hr()
+                                    ),
+                                    fluidRow(Rsnakeconf.checkboxInput(label="Keep section names as first dimension",id="keep_section",vals="checked"))
+                                    
+                                    
                                 )
                          )
                      ),
@@ -148,8 +153,11 @@ server <- function(input, output, session) {
     # Generate json format with user values (VISUALIZE and Create button)
     #return conf text
     ConfigOutput <- reactive({
-        out <- NULL;
+        outs <- list()
         for(i in 1:length(Rsnakeconf.conf.data)){
+            out <- NULL
+            deb_out <- paste0("\t\"",names(Rsnakeconf.conf.data)[i],"\" : {\n");
+            tabsep <- ifelse(input$keep_section,"\t\t\"","\t\"")
             for(j in 1:length(Rsnakeconf.conf.data[[i]])){
                 input_name <- names(Rsnakeconf.conf.data[[i]])[j];
                 input_data <- input[[input_name]];
@@ -162,12 +170,12 @@ server <- function(input, output, session) {
                         ";" = ";"
                     )
                     
-                    sentence <- paste0("\t\"",input_name,"\" : [\"",gsub(sep,"\",\"",input_data),"\"]");
+                    sentence <- paste0(tabsep,input_name,"\" : [\"",gsub(sep,"\",\"",input_data),"\"]");
                 }else {
                     if(is.logical(input_data) || is.numeric(input_data)){
-                        sentence <- paste0("\t\"",input_name,"\" : ",tolower(as.character(input_data)));
+                        sentence <- paste0(tabsep,input_name,"\" : ",tolower(as.character(input_data)));
                     }else {
-                        sentence <- paste0("\t\"",input_name,"\" : \"",input_data,"\"");
+                        sentence <- paste0(tabsep,input_name,"\" : \"",input_data,"\"");
                     }
                     
                 }
@@ -178,8 +186,14 @@ server <- function(input, output, session) {
                     out <- paste(out,sentence,sep=",\n");    
                 }
             }
+            if(input$keep_section){
+                outs[[i]] <- paste0(deb_out,out,"\n\t}");    
+            }else{
+                outs[[i]] <- out;
+            }
+            
         }
-        out <- paste("{\n",out,"\n}");
+        out <- paste0("{\n",paste(outs,collapse = ",\n"),"\n}")
         return(out)
     })
     #Update Ace Editor with Update button
